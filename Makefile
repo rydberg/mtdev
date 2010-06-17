@@ -2,7 +2,7 @@ VERSION = 1
 PATCHLEVEL = 0
 EXTRAVERSION = beta1
 
-LIBRARY	= mtdev.so
+LIBRARY	= libmtdev.so
 MODULES = src
 
 o_src	= match iobuf caps core
@@ -20,7 +20,7 @@ TOBJ	= $(addprefix obj/,$(addsuffix .o,$(TARGETS)))
 OBJS	= $(addprefix obj/,$(OBJECTS))
 LIBS	= 
 
-DLIB	= usr/lib/xorg/modules
+DLIB	= usr/lib
 
 INCLUDE = -Iinclude
 OPTS	= -O3 -fPIC
