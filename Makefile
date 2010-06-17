@@ -2,7 +2,7 @@ VERSION = 1
 PATCHLEVEL = 0
 EXTRAVERSION = beta1
 
-LIBRARY	= libmtdev.so
+LIBRARY	= libmtdev
 MODULES = src
 
 o_src	= match iobuf caps core
@@ -15,12 +15,13 @@ OBJECTS	= $(addsuffix .o,\
 	$(addprefix $(mod)/,$(o_$(mod)))))
 
 TBIN	= $(addprefix bin/,$(TARGETS))
-TLIB	= $(addprefix obj/,$(LIBRARY))
+SLIB	= $(addprefix obj/,$(LIBRARY).a)
+DLIB	= $(addprefix obj/,$(LIBRARY).so)
 TOBJ	= $(addprefix obj/,$(addsuffix .o,$(TARGETS)))
 OBJS	= $(addprefix obj/,$(OBJECTS))
 LIBS	= 
 
-DLIB	= usr/lib
+DESTLIB	= usr/lib
 
 INCLUDE = -Iinclude
 OPTS	= -O3 -fPIC
@@ -28,14 +29,18 @@ OPTS	= -O3 -fPIC
 .PHONY: all clean
 .PRECIOUS: obj/%.o
 
-all:	$(OBJS) $(TLIB) $(TOBJ) $(TBIN)
+all:	$(OBJS) $(SLIB) $(DLIB) $(TOBJ) $(TBIN)
 
-bin/%:	obj/%.o $(TLIB)
+bin/%:	obj/%.o $(SLIB)
 	@mkdir -p $(@D)
-	gcc $< -o $@ $(TLIB) $(LIBS)
+	gcc $< -o $@ $(SLIB) $(LIBS)
 
-$(TLIB): $(OBJS) $(XOBJS)
-	@rm -f $(TLIB)
+$(SLIB): $(OBJS) $(XOBJS)
+	@rm -f $(SLIB)
+	ar qc $@ $(OBJS) $(XOBJS)
+
+$(DLIB): $(OBJS) $(XOBJS)
+	@rm -f $(DLIB)
 	gcc -shared $(OBJS) $(XOBJS) -Wl,-soname -Wl,$(LIBRARY) -o $@
 
 obj/%.o: %.c
@@ -48,6 +53,8 @@ clean:
 distclean: clean
 	rm -rf debian/*.log debian/files
 
-install: $(TLIB) $(TFDI)
-	install -d "$(DESTDIR)/$(DLIB)"
-	install -m 755 $(TLIB) "$(DESTDIR)/$(DLIB)"
+install: $(SLIB) $(DLIB)
+	install -d $(DESTDIR)/$(DESTLIB)
+	install -m 755 $(SLIB) $(DESTDIR)/$(DESTLIB)
+	install -m 755 $(DLIB) $(DESTDIR)/$(DESTLIB)
+	ldconfig -n $(DESTDIR)/$(DESTLIB)
