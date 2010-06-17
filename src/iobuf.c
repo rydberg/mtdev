@@ -28,6 +28,18 @@
 
 #include "iobuf.h"
 #include "state.h"
+#include <poll.h>
+
+int mtdev_idle(struct mtdev *dev, int fd, int ms)
+{
+	struct mtdev_state *state = dev->state;
+	struct mtdev_iobuf *buf = &state->iobuf;
+        struct pollfd fds = { fd, POLLIN, 0 };
+	return evbuf_empty(&state->outbuf) &&
+		evbuf_empty(&state->inbuf) &&
+		buf->head == buf->tail &&
+		poll(&fds, 1, ms) <= 0;
+}
 
 int mtdev_fetch(struct mtdev *dev, struct input_event *ev, int fd)
 {

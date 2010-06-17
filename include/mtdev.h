@@ -146,6 +146,17 @@ int mtdev_configure(struct mtdev *dev, int fd);
 int mtdev_open(struct mtdev *dev, int fd);
 
 /**
+ * mtdev_idle - check state of kernel device
+ * @dev: the mtdev in use
+ * @fd: file descriptor of the kernel device
+ * @ms: number of milliseconds to wait for activity
+ *
+ * Returns true if the device is idle, i.e., there are no buffered
+ * events and there is nothing to fetch from the kernel device.
+ */
+int mtdev_idle(struct mtdev *dev, int fd, int ms);
+
+/**
  * mtdev_fetch - fetch an event from the kernel device
  * @dev: the mtdev in use
  * @ev: the kernel input event to fill
