@@ -151,8 +151,8 @@ int mtdev_open(struct mtdev *dev, int fd);
  * @fd: file descriptor of the kernel device
  * @ms: number of milliseconds to wait for activity
  *
- * Returns true if the device is idle, i.e., there are no buffered
- * events and there is nothing to fetch from the kernel device.
+ * Returns true if the device is idle, i.e., there are no fetched
+ * events in the pipe and there is nothing to fetch from the device.
  */
 int mtdev_idle(struct mtdev *dev, int fd, int ms);
 
