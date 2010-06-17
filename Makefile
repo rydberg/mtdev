@@ -41,7 +41,7 @@ $(SLIB): $(OBJS) $(XOBJS)
 
 $(DLIB): $(OBJS) $(XOBJS)
 	@rm -f $(DLIB)
-	gcc -shared $(OBJS) $(XOBJS) -Wl,-soname -Wl,$(LIBRARY) -o $@
+	gcc -shared $(OBJS) $(XOBJS) -Wl,-soname -Wl,$(LIBRARY).so -o $@
 
 obj/%.o: %.c
 	@mkdir -p $(@D)
