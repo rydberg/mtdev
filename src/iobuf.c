@@ -41,7 +41,7 @@ int mtdev_idle(struct mtdev *dev, int fd, int ms)
 		poll(&fds, 1, ms) <= 0;
 }
 
-int mtdev_fetch(struct mtdev *dev, struct input_event *ev, int fd)
+int mtdev_fetch(struct mtdev *dev, int fd, struct input_event *ev)
 {
 	struct mtdev_iobuf *buf = &dev->state->iobuf;
 	int n = buf->head - buf->tail;
@@ -69,7 +69,7 @@ int mtdev_pull(struct mtdev *dev, int fd, int max_events)
 	struct input_event ev;
 	int ret, count = 0;
 	while (max_events-- && !evbuf_full(&state->inbuf)) {
-		ret = mtdev_fetch(dev, &ev, fd);
+		ret = mtdev_fetch(dev, fd, &ev);
 		if (ret < 0)
 			return ret;
 		if (ret == 0)

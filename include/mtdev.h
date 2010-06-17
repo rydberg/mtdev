@@ -159,8 +159,8 @@ int mtdev_idle(struct mtdev *dev, int fd, int ms);
 /**
  * mtdev_fetch - fetch an event from the kernel device
  * @dev: the mtdev in use
- * @ev: the kernel input event to fill
  * @fd: file descriptor of the kernel device
+ * @ev: the kernel input event to fill
  *
  * Fetch a kernel event from the kernel device. The read operation
  * behaves as dictated by the file descriptior; if O_NONBLOCK is not
@@ -169,7 +169,7 @@ int mtdev_idle(struct mtdev *dev, int fd, int ms);
  * On success, returns the number of events read. Otherwise, a standard
  * negative error number is returned.
  */
-int mtdev_fetch(struct mtdev *dev, struct input_event *ev, int fd);
+int mtdev_fetch(struct mtdev *dev, int fd, struct input_event *ev);
 
 /**
  * mtdev_put - put an event into the converter
