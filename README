@@ -1,0 +1,9 @@
+mtdev - MT device event converter (MIT license)
+
+The mtdev library transforms all variants of kernel MT events to the
+slotted type B protocol. See the kernel documentation for more
+details.
+
+---
+Copyright (C) 2010 Henrik Rydberg <rydberg@euromail.se>
+Copyright (C) 2010 Canonical Ltd.
