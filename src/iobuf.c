@@ -68,6 +68,8 @@ int mtdev_pull(struct mtdev *dev, int fd, int max_events)
 	struct mtdev_state *state = dev->state;
 	struct input_event ev;
 	int ret, count = 0;
+	if (max_events <= 0)
+		max_events = DIM_EVENTS;
 	while (max_events-- && !evbuf_full(&state->inbuf)) {
 		ret = mtdev_fetch(dev, fd, &ev);
 		if (ret < 0)

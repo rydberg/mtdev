@@ -189,12 +189,13 @@ void mtdev_put(struct mtdev *dev, const struct input_event *ev);
  * mtdev_pull - pull events from the kernel device
  * @dev: the mtdev in use
  * @fd: file descriptor of the kernel device
- * @max_events: max number of events to read
+ * @max_events: max number of events to read (zero for all)
  *
  * Read a maxmimum of max_events events from the device, and put them
- * in the converter. The read operation behaves as dictated by the
- * file descriptior; if O_NONBLOCK is not set, the read will block
- * until max_events events are available or the buffer is full.
+ * in the converter. If max_events is zero, all available events will
+ * be read. The read operation behaves as dictated by the file
+ * descriptior; if O_NONBLOCK is not set, the read will block until
+ * max_events events are available or the buffer is full.
  *
  * On success, returns the number of events read. Otherwise, a standard
  * negative error number is returned.
