@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 /**
- * Bitmap implementation of the hungarian algorithm (GPL license)
+ * Bitmap implementation of the hungarian algorithm (MIT license)
  *
  * Copyright (C) 2008 Henrik Rydberg <rydberg@euromail.se>
  *
