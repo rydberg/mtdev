@@ -229,8 +229,8 @@ void mtdev_get(struct mtdev *dev, struct input_event* ev);
  * mtdev_close - close the mtdev converter
  * @dev: the mtdev to close
  *
- * Deallocates all memory associated with mtdev, and sets the state
- * pointer to NULL.
+ * Deallocates all memory associated with mtdev, and clears the mtdev
+ * structure.
  */
 void mtdev_close(struct mtdev *dev);
 
