@@ -62,7 +62,11 @@ static void loop_device(int fd)
 		fprintf(stderr, "error: could not open device: %d\n", ret);
 		return;
 	}
-	while (mtdev_pull(&dev, fd, 1) > 0) {
+	/* while the device has not been inactive for five seconds */
+	while (!mtdev_idle(&dev, fd, 5000)) {
+		/* fetch all available kernel events */
+		mtdev_pull(&dev, fd, 0);
+		/* extract all available canonical events */
 		while (!mtdev_empty(&dev)) {
 			mtdev_get(&dev, &ev);
 			if (use_event(&ev))
@@ -79,7 +83,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Usage: mtdev <device>\n");
 		return -1;
 	}
-	fd = open(argv[1], O_RDONLY);
+	fd = open(argv[1], O_RDONLY | O_NONBLOCK);
 	if (fd < 0) {
 		fprintf(stderr, "error: could not open device\n");
 		return -1;
