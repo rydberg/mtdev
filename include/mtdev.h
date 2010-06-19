@@ -109,28 +109,6 @@ struct mtdev {
 };
 
 /**
- * mtdev_init - initialize mtdev converter
- * @dev: the mtdev to initialize
- *
- * Sets up the internal data structures.
- *
- * Returns zero on success, negative error number otherwise.
- */
-int mtdev_init(struct mtdev *dev);
-
-/**
- * mtdev_configure - configure the mtdev converter
- * @dev: the mtdev to configure
- * @fd: file descriptor of the kernel device
- *
- * Reads the device properties to set up the protocol capabilities.
- * If preferred, this can be done by hand, omitting this call.
- *
- * Returns zero on success, negative error number otherwise.
- */
-int mtdev_configure(struct mtdev *dev, int fd);
-
-/**
  * mtdev_open - open an mtdev converter
  * @dev: the mtdev to open
  * @fd: file descriptor of the kernel device
@@ -140,8 +118,8 @@ int mtdev_configure(struct mtdev *dev, int fd);
  *
  * Returns zero on success, negative error number otherwise.
  *
- * This call combines mtdev_init() and mtdev_configure(), which
- * may be used separately instead.
+ * This call combines the plumbing functions mtdev_init() and
+ * mtdev_configure().
  */
 int mtdev_open(struct mtdev *dev, int fd);
 
@@ -157,73 +135,26 @@ int mtdev_open(struct mtdev *dev, int fd);
 int mtdev_idle(struct mtdev *dev, int fd, int ms);
 
 /**
- * mtdev_fetch - fetch an event from the kernel device
+ * mtdev_get - get processed events from mtdev
  * @dev: the mtdev in use
  * @fd: file descriptor of the kernel device
- * @ev: the kernel input event to fill
+ * @ev: array of input events to fill
+ * @ev_max: maximum number of events to read
  *
- * Fetch a kernel event from the kernel device. The read operation
- * behaves as dictated by the file descriptor; if O_NONBLOCK is not
- * set, the read will block until an event is available.
- *
- * On success, returns the number of events read. Otherwise, a standard
- * negative error number is returned.
- */
-int mtdev_fetch(struct mtdev *dev, int fd, struct input_event *ev);
-
-/**
- * mtdev_put - put an event into the converter
- * @dev: the mtdev in use
- * @ev: the kernel input event to put
- *
- * Put a kernel event into the mtdev converter. The event should
- * come straight from the device.
- *
- * This call does not block; if the buffer becomes full, older events
- * are dropped. The buffer is guaranteed to handle several complete MT
- * packets.
- */
-void mtdev_put(struct mtdev *dev, const struct input_event *ev);
-
-/**
- * mtdev_pull - pull events from the kernel device
- * @dev: the mtdev in use
- * @fd: file descriptor of the kernel device
- * @max_events: max number of events to read (zero for all)
- *
- * Read a maxmimum of max_events events from the device, and put them
- * in the converter. If max_events is zero, all available events will
- * be read. The read operation behaves as dictated by the file
- * descriptor; if O_NONBLOCK is not set, the read will block until
- * max_events events are available or the buffer is full.
- *
- * On success, returns the number of events read. Otherwise, a standard
- * negative error number is returned.
- *
- * This call combines mtdev_fetch() with mtdev_put(), which
- * may be used separately instead.
- */
-int mtdev_pull(struct mtdev *dev, int fd, int max_events);
-
-/**
- * mtdev_empty - check if there are events to get
- * @dev: the mtdev in use
- *
- * Returns true if the event queue is empty, false otherwise.
- */
-int mtdev_empty(struct mtdev *dev);
-
-/**
- * mtdev_get - get canonical events from mtdev
- * @dev: the mtdev in use
- * @ev: the input event to fill
- *
- * Get a canonical event from mtdev. The events appear as if they came
+ * Get a processed event from mtdev. The events appear as if they came
  * from a type B device emitting MT slot events.
  *
- * The queue must be non-empty before calling this function.
+ * The read operations involved behave as dictated by the file
+ * descriptor; if O_NONBLOCK is not set, mtdev_get() will block until
+ * the specified number of processed events are available.
+ *
+ * On success, returns the number of events read. Otherwise,
+ * a standard negative error number is returned.
+ *
+ * This call combines the plumbing functions mtdev_fetch_event(),
+ * mtdev_put_event() and mtdev_get_event().
  */
-void mtdev_get(struct mtdev *dev, struct input_event* ev);
+int mtdev_get(struct mtdev *dev, int fd, struct input_event* ev, int ev_max);
 
 /**
  * mtdev_close - close the mtdev converter

@@ -37,7 +37,7 @@ int mtdev_idle(struct mtdev *dev, int fd, int ms)
 	return	buf->head == buf->tail && poll(&fds, 1, ms) <= 0;
 }
 
-int mtdev_fetch(struct mtdev *dev, int fd, struct input_event *ev)
+int mtdev_fetch_event(struct mtdev *dev, int fd, struct input_event *ev)
 {
 	struct mtdev_iobuf *buf = &dev->state->iobuf;
 	int n = buf->head - buf->tail;
@@ -59,21 +59,30 @@ int mtdev_fetch(struct mtdev *dev, int fd, struct input_event *ev)
 	return 1;
 }
 
-int mtdev_pull(struct mtdev *dev, int fd, int max_events)
+int mtdev_empty(struct mtdev *dev)
 {
-	struct mtdev_state *state = dev->state;
-	struct input_event ev;
+	return evbuf_empty(&dev->state->outbuf);
+}
+
+void mtdev_get_event(struct mtdev *dev, struct input_event* ev)
+{
+	evbuf_get(&dev->state->outbuf, ev);
+}
+
+int mtdev_get(struct mtdev *dev, int fd, struct input_event* ev, int ev_max)
+{
+	struct input_event kev;
 	int ret, count = 0;
-	if (max_events <= 0)
-		max_events = DIM_EVENTS;
-	while (max_events-- && !evbuf_full(&state->inbuf)) {
-		ret = mtdev_fetch(dev, fd, &ev);
-		if (ret < 0)
-			return ret;
-		if (ret == 0)
-			break;
-		mtdev_put(dev, &ev);
-		count++;
+	while (count < ev_max) {
+		while (mtdev_empty(dev)) {
+			ret = mtdev_fetch_event(dev, fd, &kev);
+			if (ret < 0)
+				return ret;
+			if (ret == 0)
+				return count;
+			mtdev_put_event(dev, &kev);
+		}
+		mtdev_get_event(dev, &ev[count++]);
 	}
 	return count;
 }

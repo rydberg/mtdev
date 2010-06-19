@@ -26,7 +26,7 @@
  *
  ****************************************************************************/
 
-#include <mtdev-mapping.h>
+#include <mtdev.h>
 #include <stdio.h>
 #include <fcntl.h>
 
@@ -64,11 +64,8 @@ static void loop_device(int fd)
 	}
 	/* while the device has not been inactive for five seconds */
 	while (!mtdev_idle(&dev, fd, 5000)) {
-		/* fetch all available kernel events */
-		mtdev_pull(&dev, fd, 0);
-		/* extract all available canonical events */
-		while (!mtdev_empty(&dev)) {
-			mtdev_get(&dev, &ev);
+		/* extract all available processed events */
+		while (mtdev_get(&dev, fd, &ev, 1) > 0) {
 			if (use_event(&ev))
 				print_event(&ev);
 		}

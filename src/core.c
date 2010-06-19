@@ -360,7 +360,7 @@ int mtdev_open(struct mtdev *dev, int fd)
 	return ret;
 }
 
-void mtdev_put(struct mtdev *dev, const struct input_event *ev)
+void mtdev_put_event(struct mtdev *dev, const struct input_event *ev)
 {
 	struct mtdev_state *state = dev->state;
 	if (ev->type == EV_SYN && ev->code == SYN_REPORT) {
@@ -374,16 +374,6 @@ void mtdev_put(struct mtdev *dev, const struct input_event *ev)
 	} else {
 		evbuf_put(&state->inbuf, ev);
 	}
-}
-
-int mtdev_empty(struct mtdev *dev)
-{
-	return evbuf_empty(&dev->state->outbuf);
-}
-
-void mtdev_get(struct mtdev *dev, struct input_event* ev)
-{
-	evbuf_get(&dev->state->outbuf, ev);
 }
 
 void mtdev_close(struct mtdev *dev)

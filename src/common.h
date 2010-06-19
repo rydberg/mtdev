@@ -30,6 +30,7 @@
 #define COMMON_H
 
 #include <mtdev-mapping.h>
+#include <mtdev-plumbing.h>
 #include <malloc.h>
 #include <string.h>
 #include <errno.h>

@@ -42,11 +42,6 @@ static inline int evbuf_empty(const struct mtdev_evbuf *evbuf)
 	return evbuf->head == evbuf->tail;
 }
 
-static inline int evbuf_full(const struct mtdev_evbuf *evbuf)
-{
-	return ((evbuf->head + 1) & (DIM_EVENTS - 1)) == evbuf->tail;
-}
-
 static inline void evbuf_put(struct mtdev_evbuf *evbuf,
 			     const struct input_event *ev)
 {
