@@ -74,11 +74,14 @@
 
 #define MT_ABS_SIZE 11
 
+#define MT_ID_NULL	(-1)
+#define MT_ID_MIN	0
+#define MT_ID_MAX	65535
+
 /**
  * struct mt_caps - protocol capabilities of kernel device
  * @has_mtdata: true if the device has MT capabilities
  * @has_slot: true if the device sends MT slots
- * @nullid: tracking id used to represent null
  * @slot: slot event properties
  * @abs: ABS_MT event properties
  */
@@ -86,7 +89,6 @@ struct mtdev_caps {
 	int has_mtdata;
 	int has_slot;
 	int has_abs[MT_ABS_SIZE];
-	int nullid;
 	struct input_absinfo slot;
 	struct input_absinfo abs[MT_ABS_SIZE];
 };

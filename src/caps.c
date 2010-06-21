@@ -83,8 +83,10 @@ static int read_caps(struct mtdev_caps *cap, int fd)
 
 	cap->has_mtdata = has_mt_data(cap);
 
-	if (cap->has_abs[MTDEV_TRACKING_ID])
-		cap->nullid = cap->abs[MTDEV_TRACKING_ID].minimum - 1;
+	if (!cap->has_abs[MTDEV_TRACKING_ID]) {
+		cap->abs[MTDEV_TRACKING_ID].minimum = MT_ID_MIN;
+		cap->abs[MTDEV_TRACKING_ID].maximum = MT_ID_MAX;
+	}
 
 	default_fuzz(cap, MTDEV_POSITION_X, SN_COORD);
 	default_fuzz(cap, MTDEV_POSITION_Y, SN_COORD);

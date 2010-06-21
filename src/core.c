@@ -89,9 +89,9 @@ static void solve(struct mtdev_state *state, const struct mtdev_caps *caps,
 	/* update matched contacts and create new ones */
 	foreach_bit(i, touch) {
 		j = n2s[i];
-		id = j >= 0 ? sid[j] : caps->nullid;
-		while (id == caps->nullid)
-			id = ++state->lastid;
+		id = j >= 0 ? sid[j] : MT_ID_NULL;
+		if (id == MT_ID_NULL)
+			id = state->lastid++ & MT_ID_MAX;
 		nid[i] = id;
 	}
 }
@@ -125,7 +125,7 @@ static void assign_tracking_id(struct mtdev_state *state,
 	solve(state, caps, sid, sx, sy, sn, nid, nx, ny, size, touch);
 	for (i = 0; i < size; i++) {
 		data[i].abs[MTDEV_TRACKING_ID] =
-			GETBIT(touch, i) ? nid[i] : caps->nullid;
+			GETBIT(touch, i) ? nid[i] : MT_ID_NULL;
 		prop[i] |= BITMASK(MTDEV_TRACKING_ID);
 	}
 }
@@ -289,10 +289,10 @@ static void apply_typeA_changes(struct mtdev_state *state,
 			filter_data(state, caps, &data[i], prop[i], slot);
 			push_slot_changes(state, &data[i], prop[i], slot, syn);
 			SETBIT(used, slot);
-			id = caps->nullid;
+			id = MT_ID_NULL;
 			break;
 		}
-		if (id != caps->nullid) {
+		if (id != MT_ID_NULL) {
 			slot = firstbit(unused);
 			push_slot_changes(state, &data[i], prop[i], slot, syn);
 			SETBIT(used, slot);
@@ -304,7 +304,7 @@ static void apply_typeA_changes(struct mtdev_state *state,
 	foreach_bit(slot, state->used & ~used) {
 		struct mtdev_slot tdata = state->data[slot];
 		bitmask_t tprop = BITMASK(MTDEV_TRACKING_ID);
-		tdata.abs[MTDEV_TRACKING_ID] = caps->nullid;
+		tdata.abs[MTDEV_TRACKING_ID] = MT_ID_NULL;
 		push_slot_changes(state, &tdata, tprop, slot, syn);
 	}
 	state->used = used;
@@ -337,10 +337,13 @@ static void convert_A_to_B(struct mtdev_state *state,
 
 int mtdev_init(struct mtdev *dev)
 {
+	int i;
 	memset(dev, 0, sizeof(struct mtdev));
 	dev->state = calloc(1, sizeof(struct mtdev_state));
 	if (!dev->state)
 		return -ENOMEM;
+	for (i = 0; i < DIM_FINGER; i++)
+		dev->state->data[i].abs[MTDEV_TRACKING_ID] = MT_ID_NULL;
 	return 0;
 }
 
