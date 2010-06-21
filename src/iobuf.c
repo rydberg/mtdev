@@ -76,10 +76,8 @@ int mtdev_get(struct mtdev *dev, int fd, struct input_event* ev, int ev_max)
 	while (count < ev_max) {
 		while (mtdev_empty(dev)) {
 			ret = mtdev_fetch_event(dev, fd, &kev);
-			if (ret < 0)
-				return ret;
-			if (ret == 0)
-				return count;
+			if (ret <= 0)
+				return count > 0 ? count : ret;
 			mtdev_put_event(dev, &kev);
 		}
 		mtdev_get_event(dev, &ev[count++]);
