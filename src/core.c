@@ -84,7 +84,7 @@ static void solve(struct mtdev_state *state, const struct mtdev_caps *caps,
 			row[i] = dist2(nx[i] - sx[j], ny[i] - sy[j]);
 	}
 
-	match_fingers(n2s, A, nn, sn);
+	mtdev_match(n2s, A, nn, sn);
 
 	/* update matched contacts and create new ones */
 	foreach_bit(i, touch) {

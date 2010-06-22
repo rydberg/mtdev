@@ -38,8 +38,6 @@
  * Based on code released by Markus Buehren (2004) (BSD license)
  *
  * Copyright (C) 2004, Markus Buehren. All rights reserved.
- * See CREDITS file for full license terms.
- *
  */
 
 typedef unsigned col_t[1];
@@ -385,7 +383,7 @@ static void step5(int *ix, int *mdist, mat_t mstar, mat_t nmstar,
 	      dmin);
 }
 
-void match_fingers(int ix[DIM_FINGER], int A[DIM2_FINGER], int nrow, int ncol)
+void mtdev_match(int ix[DIM_FINGER], int A[DIM2_FINGER], int nrow, int ncol)
 {
 	ixoptimal(ix, A, nrow, ncol);
 }

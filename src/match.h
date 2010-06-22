@@ -37,7 +37,7 @@
 
 #include "common.h"
 
-void match_fingers(int index[DIM_FINGER], int A[DIM2_FINGER],
-		   int nrow, int ncol);
+void mtdev_match(int index[DIM_FINGER], int A[DIM2_FINGER],
+		 int nrow, int ncol);
 
 #endif
