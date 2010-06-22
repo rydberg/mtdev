@@ -29,6 +29,7 @@
 #include "state.h"
 #include "iobuf.h"
 #include "evbuf.h"
+#include "match.h"
 
 static inline int istouch(const struct mtdev_slot *data,
 			  const struct mtdev_caps *caps)

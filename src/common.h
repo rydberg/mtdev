@@ -80,7 +80,7 @@ static inline int bitcount(unsigned v)
 
 /* boost-style foreach bit */
 #define foreach_bit(i, m)						\
-	for (i = firstbit(m); i >= 0; i = firstbit((m) & (~0U << i + 1)))
+	for (i = firstbit(m); i >= 0; i = firstbit((m) & (~0U << (i + 1))))
 
 /* robust system ioctl calls */
 #define SYSCALL(call) while (((call) == -1) && (errno == EINTR))

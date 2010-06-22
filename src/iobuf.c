@@ -28,6 +28,7 @@
 
 #include "iobuf.h"
 #include "state.h"
+#include <unistd.h>
 #include <poll.h>
 
 int mtdev_idle(struct mtdev *dev, int fd, int ms)

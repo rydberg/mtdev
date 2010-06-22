@@ -28,6 +28,7 @@
 
 #include <mtdev.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <fcntl.h>
 
 /* year-proof millisecond event time */

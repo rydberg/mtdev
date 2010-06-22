@@ -288,7 +288,7 @@ static void step4(int *ix, int *mdist, mat_t mstar, mat_t nmstar,
 		  mat_t mprime, col_t ccol, col_t crow, int nrows, int ncols,
 		  int dmin, int row, int col)
 {
-	int n, rstar, cstar, primeRow, primeCol;
+	int rstar, cstar, primeRow, primeCol;
 
 	/* generate temporary copy of mstar */
 	memcpy(nmstar, mstar, sizeof(mat_t));
