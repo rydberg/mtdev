@@ -21,6 +21,14 @@ AC_PROG_LIBTOOL
 AC_PROG_CC
 AC_PROG_INSTALL
 
+# Optional test build
+AC_ARG_ENABLE(test,
+              AC_HELP_STRING([--enable-test],
+	      [Build test programs [[default=auto]]]),
+              [build_test="$enableval"],
+              [build_test="auto"])
+AM_CONDITIONAL(BUILD_TEST, [ test "$build_test" != "no" ])
+
 # Initialize X.Org macros
 m4_ifndef([XORG_MACROS_VERSION],
           [m4_fatal([must install xorg-macros 1.5 or later before running autoconf/autogen])])
@@ -29,5 +37,6 @@ XORG_DEFAULT_OPTIONS
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile
+                 test/Makefile
                  mtdev.pc])
 AC_OUTPUT
