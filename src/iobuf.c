@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * mtdev - MT device event converter (MIT license)
+ * mtdev - Multitouch Protocol Translation Library (MIT license)
  *
  * Copyright (C) 2010 Henrik Rydberg <rydberg@euromail.se>
  * Copyright (C) 2010 Canonical Ltd.
