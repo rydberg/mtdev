@@ -38,7 +38,7 @@ static inline int istouch(const struct mtdev_slot *data,
 		!caps->has_abs[MTDEV_TOUCH_MAJOR];
 }
 
-/* Dmitry Torokhov's code from kernel/driver/input/input.c */
+/* Response-augmented EWMA filter, courtesy of Vojtech Pavlik */
 static int defuzz(int value, int old_val, int fuzz)
 {
 	if (fuzz) {
