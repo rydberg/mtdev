@@ -6,6 +6,9 @@ device, specifically type A without contact tracking, type A with
 contact tracking, or type B with contact tracking. See the kernel
 documentation for further details.
 
+http://bitmath.org/code/mtdev/
+Please send patches to: patches@bitmath.org
+
 ---
 Copyright (C) 2010 Henrik Rydberg <rydberg@euromail.se>
 Copyright (C) 2010 Canonical Ltd.
