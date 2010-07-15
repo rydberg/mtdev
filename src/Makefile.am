@@ -3,6 +3,13 @@ lib_LTLIBRARIES = libmtdev.la
 libmtdev_la_LDFLAGS = -version-info @LIB_VERSION@
 
 libmtdev_la_SOURCES = \
+	$(top_srcdir)/include/mtdev-mapping.h \
+	$(top_srcdir)/include/mtdev-plumbing.h \
+	common.h \
+	evbuf.h \
+	iobuf.h \
+	match.h \
+	state.h \
 	caps.c \
 	core.c \
 	iobuf.c \
