@@ -76,6 +76,6 @@ core
 #		Edit the following section as needed
 # For example, !report.pc overrides *.pc. See 'man gitignore'
 #
-test/mtdev
+test/mtdev-test
 test/mtdev-mapgen
 patches
