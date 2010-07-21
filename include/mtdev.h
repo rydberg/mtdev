@@ -57,6 +57,8 @@
 /* includes available in 2.6.36 */
 #ifndef ABS_MT_SLOT
 #define ABS_MT_SLOT		0x2f	/* MT slot being modified */
+#endif
+#ifndef MT_SLOT_ABS_EVENTS
 #define MT_SLOT_ABS_EVENTS {	\
 	ABS_MT_TOUCH_MAJOR,	\
 	ABS_MT_TOUCH_MINOR,	\
