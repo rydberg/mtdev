@@ -22,7 +22,6 @@ configure
 configure.scan
 depcomp
 .deps/
-INSTALL
 install-sh
 .libs/
 libtool

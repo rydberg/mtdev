@@ -6,6 +6,7 @@ AC_INIT([Multitouch Protocol Translation Library],
         [mtdev])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_AUX_DIR([config-aux])
 
 # Initialize Automake
 AM_INIT_AUTOMAKE([foreign dist-bzip2])
@@ -20,12 +21,6 @@ AC_PROG_LIBTOOL
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-
-# Initialize X.Org macros
-m4_ifndef([XORG_MACROS_VERSION],
-          [m4_fatal([must install xorg-macros 1.5 or later before running autoconf/autogen])])
-XORG_MACROS_VERSION(1.5)
-XORG_DEFAULT_OPTIONS
 
 AC_CONFIG_FILES([Makefile
                  src/Makefile

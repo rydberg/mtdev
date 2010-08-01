@@ -9,6 +9,6 @@ INCLUDES = $(top_srcdir)/include/
 INSTALL:
 	$(INSTALL_CMD)
 ChangeLog:
-	$(CHANGELOG_CMD)
+	git log > ChangeLog
 
 dist-hook: ChangeLog INSTALL
