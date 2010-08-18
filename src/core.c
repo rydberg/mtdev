@@ -369,10 +369,10 @@ void mtdev_put_event(struct mtdev *dev, const struct input_event *ev)
 	struct mtdev_state *state = dev->state;
 	if (ev->type == EV_SYN && ev->code == SYN_REPORT) {
 		bitmask_t head = state->outbuf.head;
-		if (dev->state)
-			convert_A_to_B(state, &dev->caps, ev);
-		else
+		if (dev->caps.has_slot)
 			process_typeB(state);
+		else
+			convert_A_to_B(state, &dev->caps, ev);
 		if (state->outbuf.head != head)
 			evbuf_put(&state->outbuf, ev);
 	} else {
