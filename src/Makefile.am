@@ -20,4 +20,7 @@ AM_CFLAGS = $(CWARNFLAGS)
 INCLUDES = -I$(top_srcdir)/include/
 
 libmtdevincludedir = $(includedir)
-libmtdevinclude_HEADERS = $(top_srcdir)/include/mtdev.h
+libmtdevinclude_HEADERS = \
+	$(top_srcdir)/include/mtdev-mapping.h \
+	$(top_srcdir)/include/mtdev-plumbing.h \
+	$(top_srcdir)/include/mtdev.h
