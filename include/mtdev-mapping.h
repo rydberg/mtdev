@@ -33,14 +33,17 @@
 
 #include <mtdev.h>
 
-#define MTDEV_TRACKING_ID	9
-#define MTDEV_POSITION_X	5
-#define MTDEV_POSITION_Y	6
 #define MTDEV_TOUCH_MAJOR	0
 #define MTDEV_TOUCH_MINOR	1
 #define MTDEV_WIDTH_MAJOR	2
 #define MTDEV_WIDTH_MINOR	3
 #define MTDEV_ORIENTATION	4
+#define MTDEV_POSITION_X	5
+#define MTDEV_POSITION_Y	6
+#define MTDEV_TOOL_TYPE		7
+#define MTDEV_BLOB_ID		8
+#define MTDEV_TRACKING_ID	9
+#define MTDEV_PRESSURE		10
 
 static const unsigned int mtdev_map_abs2mt[ABS_CNT] = {
  0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,

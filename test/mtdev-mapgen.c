@@ -63,14 +63,17 @@ int main(int argc, char *argv[])
 	for (i = 0; i < MT_ABS_SIZE; i++)
 		printf(" 0x%04x,%s", cmt2abs[i], newln(i, MT_ABS_SIZE));
 	printf("};\n\n");
-	BIT_DEF(TRACKING_ID);
-	BIT_DEF(POSITION_X);
-	BIT_DEF(POSITION_Y);
 	BIT_DEF(TOUCH_MAJOR);
 	BIT_DEF(TOUCH_MINOR);
 	BIT_DEF(WIDTH_MAJOR);
 	BIT_DEF(WIDTH_MINOR);
 	BIT_DEF(ORIENTATION);
+	BIT_DEF(POSITION_X);
+	BIT_DEF(POSITION_Y);
+	BIT_DEF(TOOL_TYPE);
+	BIT_DEF(BLOB_ID);
+	BIT_DEF(TRACKING_ID);
+	BIT_DEF(PRESSURE);
 	printf("\n");
 	return 0;
 }
