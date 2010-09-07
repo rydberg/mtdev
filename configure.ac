@@ -1,7 +1,7 @@
 # Initialize Autoconf
 AC_PREREQ([2.60])
 AC_INIT([Multitouch Protocol Translation Library],
-        [1.0.9],
+        [1.0.10],
         [],
         [mtdev])
 AC_CONFIG_SRCDIR([Makefile.am])
