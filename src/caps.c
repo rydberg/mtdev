@@ -83,6 +83,13 @@ static int read_caps(struct mtdev_caps *cap, int fd)
 
 	cap->has_mtdata = has_mt_data(cap);
 
+	if (!cap->has_abs[MTDEV_POSITION_X])
+		getabs(&cap->abs[MTDEV_POSITION_X], ABS_X, fd);
+	if (!cap->has_abs[MTDEV_POSITION_Y])
+		getabs(&cap->abs[MTDEV_POSITION_Y], ABS_Y, fd);
+	if (!cap->has_abs[MTDEV_PRESSURE])
+		getabs(&cap->abs[MTDEV_PRESSURE], ABS_PRESSURE, fd);
+
 	if (!cap->has_abs[MTDEV_TRACKING_ID]) {
 		cap->abs[MTDEV_TRACKING_ID].minimum = MT_ID_MIN;
 		cap->abs[MTDEV_TRACKING_ID].maximum = MT_ID_MAX;
