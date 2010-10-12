@@ -77,4 +77,5 @@ core
 #
 test/mtdev-test
 test/mtdev-mapgen
+test/mtdev-matching
 patches
