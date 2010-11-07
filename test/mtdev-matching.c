@@ -30,7 +30,9 @@
 #include <stdio.h>
 #include <time.h>
 
-#define ITS 1000000
+#define ITS 4000000
+const int n1 = 4;
+const int n2 = 4;
 
 static void test1()
 {
@@ -99,25 +101,22 @@ static void speed1()
 	int A[DIM2_FINGER];
 	int x1[DIM_FINGER] = { 1, 5, 2, 3, 4, 5, 6, 7, 8 };
 	int y1[DIM_FINGER] = { 1, 5, 2, 3, 4, 6, 6, 7, 8 };
-	int x2[DIM_FINGER] = { 1.1, 3, 2, 4, 5, 6, 7, 8 };
+	int x2[DIM_FINGER] = { 1, 3, 2, 4, 5, 6, 7, 8 };
 	int y2[DIM_FINGER] = { 1, 3, 2, 4, 5, 6, 7, 8 };
 	int index[DIM_FINGER];
-	int n1 = 4;
-	int n2 = 7;
-
-	int i, j;
-
-	for (i = 0; i < n1; i++) {
-		for (j = 0; j < n2; j++) {
-			A[i + n1 * j] =
-				(x1[i] - x2[j]) * (x1[i] - x2[j]) +
-				(y1[i] - y2[j]) * (y1[i] - y2[j]);
-		}
-	}
+	int i, j, k;
 
 	clock_t t1 = clock();
-	for (i = 0; i < ITS; i++)
+	for (k = 0; k < ITS; k++) {
+		for (i = 0; i < n1; i++) {
+			for (j = 0; j < n2; j++) {
+				A[i + n1 * j] =
+					(x1[i] - x2[j]) * (x1[i] - x2[j]) +
+					(y1[i] - y2[j]) * (y1[i] - y2[j]);
+			}
+		}
 		mtdev_match(index, A, n1, n2);
+	}
 	clock_t t2 = clock();
 
 	printf("%lf matches per second\n",
@@ -125,6 +124,38 @@ static void speed1()
 
 	for (i = 0; i < n1; i++)
 		printf("match[%d] = %d\n", i, index[i]);
+
+}
+
+static void speed2()
+{
+	struct trk_coord p1[] = {
+		{ 1, 1 },
+		{ 5, 5 },
+		{ 2, 2 },
+		{ 3, 3 },
+		{ 4, 4 },
+	};
+	struct trk_coord p2[] = {
+		{ 1, 1 },
+		{ 3, 3 },
+		{ 2, 2 },
+		{ 4, 4 },
+		{ 5, 5 },
+	};
+	const unsigned char *p;
+	int i;
+
+	clock_t t1 = clock();
+	for (i = 0; i < ITS; i++)
+		p = mtdev_match_four(p1, n1, p2, n2);
+	clock_t t2 = clock();
+
+	printf("%lf matches per second\n",
+	       ITS * ((float)CLOCKS_PER_SEC / (t2 - t1)));
+
+	for (i = 0; i < n2; i++)
+		printf("match[%d] = %d\n", i, p[i]);
 
 }
 
@@ -136,6 +167,8 @@ int main(int argc, char *argv[])
 	test2();
 	printf("speed1\n");
 	speed1();
+	printf("speed2\n");
+	speed2();
 	printf("done\n");
 	return 0;
 }

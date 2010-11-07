@@ -13,7 +13,8 @@ libmtdev_la_SOURCES = \
 	caps.c \
 	core.c \
 	iobuf.c \
-	match.c
+	match.c \
+	match_four.c
 
 AM_CFLAGS = $(CWARNFLAGS)
 

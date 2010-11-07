@@ -40,4 +40,12 @@
 void mtdev_match(int index[DIM_FINGER], int A[DIM2_FINGER],
 		 int nrow, int ncol);
 
+struct trk_coord {
+	int x;
+	int y;
+};
+
+const unsigned char *mtdev_match_four(const struct trk_coord *old, int nslot,
+				      const struct trk_coord *pos, int npos);
+
 #endif
