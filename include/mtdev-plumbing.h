@@ -29,6 +29,10 @@
 #ifndef _MTDEV_PLUMBING_H
 #define _MTDEV_PLUMBING_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <mtdev.h>
 
 /**
@@ -101,5 +105,9 @@ int mtdev_empty(struct mtdev *dev);
  * The queue must be non-empty before calling this function.
  */
 void mtdev_get_event(struct mtdev *dev, struct input_event* ev);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

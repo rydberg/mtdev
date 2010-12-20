@@ -31,6 +31,10 @@
 #ifndef _MTDEV_MAPPING_H
 #define _MTDEV_MAPPING_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <mtdev.h>
 
 #define MTDEV_TOUCH_MAJOR	0
@@ -75,5 +79,9 @@ static inline unsigned int mtdev_mt2abs(unsigned int mtcode)
 {
 	return mtdev_map_mt2abs[mtcode];
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

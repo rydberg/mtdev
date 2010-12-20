@@ -29,6 +29,10 @@
 #ifndef _MTDEV_H
 #define _MTDEV_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <linux/input.h>
 
 /* includes available in 2.6.30-rc5 */
@@ -168,5 +172,9 @@ int mtdev_get(struct mtdev *dev, int fd, struct input_event* ev, int ev_max);
  * structure.
  */
 void mtdev_close(struct mtdev *dev);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
