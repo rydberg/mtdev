@@ -30,7 +30,7 @@
 #include <mtdev.h>
 #include <stdio.h>
 
-#define MT_ABS_SIZE	11
+#define MT_ABS_SIZE	12
 #define MT_SLOT_ABS_EVENTS {	\
 	ABS_MT_TOUCH_MAJOR,	\
 	ABS_MT_TOUCH_MINOR,	\
@@ -43,6 +43,7 @@
 	ABS_MT_BLOB_ID,		\
 	ABS_MT_TRACKING_ID,	\
 	ABS_MT_PRESSURE,	\
+	ABS_MT_DISTANCE,	\
 }
 
 static unsigned int cabs2mt[ABS_CNT];

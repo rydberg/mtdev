@@ -63,6 +63,11 @@ extern "C" {
 #define ABS_MT_SLOT		0x2f	/* MT slot being modified */
 #endif
 
+/* includes available in 2.6.38 */
+#ifndef ABS_MT_DISTANCE
+#define ABS_MT_DISTANCE		0x3b	/* Contact hover distance */
+#endif
+
 #define MT_ID_NULL	(-1)
 #define MT_ID_MIN	0
 #define MT_ID_MAX	65535
