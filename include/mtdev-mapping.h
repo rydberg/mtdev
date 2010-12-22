@@ -37,6 +37,8 @@ extern "C" {
 
 #include <mtdev.h>
 
+#ifndef MTDEV_NO_LEGACY_API
+
 #define MTDEV_TOUCH_MAJOR	0
 #define MTDEV_TOUCH_MINOR	1
 #define MTDEV_WIDTH_MAJOR	2
@@ -79,6 +81,8 @@ static inline unsigned int mtdev_mt2abs(unsigned int mtcode)
 {
 	return mtdev_map_mt2abs[mtcode];
 }
+
+#endif
 
 #ifdef __cplusplus
 }

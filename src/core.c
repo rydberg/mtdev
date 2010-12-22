@@ -32,10 +32,16 @@
 #include "match.h"
 
 static inline int istouch(const struct mtdev_slot *data,
-			  const struct mtdev_caps *caps)
+			  const struct mtdev *dev)
 {
-	return data->abs[MTDEV_TOUCH_MAJOR] ||
-		!caps->has_abs[MTDEV_TOUCH_MAJOR];
+	return data->touch_major ||
+		!mtdev_has_mt_event(dev, ABS_MT_TOUCH_MAJOR);
+}
+
+static inline int isfilled(unsigned int mask)
+{
+	return GETBIT(mask, mtdev_abs2mt(ABS_MT_POSITION_X)) &&
+		GETBIT(mask, mtdev_abs2mt(ABS_MT_POSITION_Y));
 }
 
 /* Response-augmented EWMA filter, courtesy of Vojtech Pavlik */
@@ -58,7 +64,7 @@ static int defuzz(int value, int old_val, int fuzz)
 /*
  * solve - solve contact matching problem
  * @state: mtdev state
- * @caps: device capabilities
+ * @dev: device capabilities
  * @sid: array of current tracking ids
  * @sx: array of current position x
  * @sy: array of current position y
@@ -69,7 +75,7 @@ static int defuzz(int value, int old_val, int fuzz)
  * @nn: number of new contacts
  * @touch: which of the new contacts to fill
  */
-static void solve(struct mtdev_state *state, const struct mtdev_caps *caps,
+static void solve(struct mtdev_state *state, const struct mtdev *dev,
 		  const int *sid, const int *sx, const int *sy, int sn,
 		  int *nid, const int *nx, const int *ny, int nn,
 		  bitmask_t touch)
@@ -100,34 +106,33 @@ static void solve(struct mtdev_state *state, const struct mtdev_caps *caps,
 /*
  * assign_tracking_id - assign tracking ids to all contacts
  * @state: mtdev state
- * @caps: device capabilities
+ * @dev: device capabilities
  * @data: array of all present contacts, to be filled
  * @prop: array of all set contacts properties
  * @size: number of contacts in array
  * @touch: which of the contacts are actual touches
  */
 static void assign_tracking_id(struct mtdev_state *state,
-			       const struct mtdev_caps *caps,
+			       const struct mtdev *dev,
 			       struct mtdev_slot *data, bitmask_t *prop,
 			       int size, bitmask_t touch)
 {
 	int sid[DIM_FINGER], sx[DIM_FINGER], sy[DIM_FINGER], sn = 0;
 	int nid[DIM_FINGER], nx[DIM_FINGER], ny[DIM_FINGER], i;
 	foreach_bit(i, state->used) {
-		sid[sn] = state->data[i].abs[MTDEV_TRACKING_ID];
-		sx[sn] = state->data[i].abs[MTDEV_POSITION_X];
-		sy[sn] = state->data[i].abs[MTDEV_POSITION_Y];
+		sid[sn] = state->data[i].tracking_id;
+		sx[sn] = state->data[i].position_x;
+		sy[sn] = state->data[i].position_y;
 		sn++;
 	}
 	for (i = 0; i < size; i++) {
-		nx[i] = data[i].abs[MTDEV_POSITION_X];
-		ny[i] = data[i].abs[MTDEV_POSITION_Y];
+		nx[i] = data[i].position_x;
+		ny[i] = data[i].position_y;
 	}
-	solve(state, caps, sid, sx, sy, sn, nid, nx, ny, size, touch);
+	solve(state, dev, sid, sx, sy, sn, nid, nx, ny, size, touch);
 	for (i = 0; i < size; i++) {
-		data[i].abs[MTDEV_TRACKING_ID] =
-			GETBIT(touch, i) ? nid[i] : MT_ID_NULL;
-		prop[i] |= BITMASK(MTDEV_TRACKING_ID);
+		data[i].tracking_id = GETBIT(touch, i) ? nid[i] : MT_ID_NULL;
+		SETBIT(prop[i], mtdev_abs2mt(ABS_MT_TRACKING_ID));
 	}
 }
 
@@ -157,9 +162,7 @@ static int process_typeA(struct mtdev_state *state,
 		case EV_SYN:
 			switch (ev.code) {
 			case SYN_MT_REPORT:
-				if (size < DIM_FINGER &&
-				    GETBIT(prop[size], MTDEV_POSITION_X) &&
-				    GETBIT(prop[size], MTDEV_POSITION_Y))
+				if (size < DIM_FINGER && isfilled(prop[size]))
 					size++;
 				if (size < DIM_FINGER)
 					prop[size] = 0;
@@ -178,8 +181,8 @@ static int process_typeA(struct mtdev_state *state,
 		case EV_ABS:
 			if (size < DIM_FINGER && mtdev_is_absmt(ev.code)) {
 				mtcode = mtdev_abs2mt(ev.code);
-				data[size].abs[mtcode] = ev.value;
-				prop[size] |= BITMASK(mtcode);
+				set_sval(&data[size], mtcode, ev.value);
+				SETBIT(prop[size], mtcode);
 				mtcnt++;
 				consumed = 1;
 			}
@@ -210,21 +213,22 @@ static void process_typeB(struct mtdev_state *state)
 /*
  * filter_data - apply input filtering on new incoming data
  * @state: mtdev state
- * @caps: device capabilities
+ * @dev: device capabilities
  * @data: the incoming data to filter
  * @prop: the properties to filter
  * @slot: the slot the data refers to
  */
 static void filter_data(const struct mtdev_state *state,
-			const struct mtdev_caps *caps,
+			const struct mtdev *dev,
 			struct mtdev_slot *data, bitmask_t prop,
 			int slot)
 {
 	int i;
 	foreach_bit(i, prop) {
-		int fuzz = caps->abs[i].fuzz;
-		int oldval = state->data[slot].abs[i];
-		data->abs[i] = defuzz(data->abs[i], oldval, fuzz);
+		int fuzz = mtdev_get_abs_fuzz(dev, mtdev_mt2abs(i));
+		int oldval = get_sval(&state->data[slot], i);
+		int value = get_sval(data, i);
+		set_sval(data, i, defuzz(value, oldval, fuzz));
 	}
 }
 
@@ -243,7 +247,7 @@ static void push_slot_changes(struct mtdev_state *state,
 	struct input_event ev;
 	int i, count = 0;
 	foreach_bit(i, prop)
-		if (state->data[slot].abs[i] != data->abs[i])
+		if (get_sval(&state->data[slot], i) != get_sval(data, i))
 			count++;
 	if (!count)
 		return;
@@ -257,10 +261,10 @@ static void push_slot_changes(struct mtdev_state *state,
 	}
 	foreach_bit(i, prop) {
 		ev.code = mtdev_mt2abs(i);
-		ev.value = data->abs[i];
-		if (state->data[slot].abs[i] != ev.value) {
+		ev.value = get_sval(data, i);
+		if (get_sval(&state->data[slot], i) != ev.value) {
 			evbuf_put(&state->outbuf, &ev);
-			state->data[slot].abs[i] = ev.value;
+			set_sval(&state->data[slot], i, ev.value);
 		}
 	}
 }
@@ -268,14 +272,14 @@ static void push_slot_changes(struct mtdev_state *state,
 /*
  * apply_typeA_changes - parse and propagate state changes
  * @state: mtdev state
- * @caps: device capabilities
+ * @dev: device capabilities
  * @data: array of data to apply
  * @prop: array of properties to apply
  * @size: number of contacts in array
  * @syn: reference to the SYN_REPORT event
  */
 static void apply_typeA_changes(struct mtdev_state *state,
-				const struct mtdev_caps *caps,
+				const struct mtdev *dev,
 				struct mtdev_slot *data, const bitmask_t *prop,
 				int size, const struct input_event *syn)
 {
@@ -283,11 +287,11 @@ static void apply_typeA_changes(struct mtdev_state *state,
 	bitmask_t used = 0;
 	int i, slot, id;
 	for (i = 0; i < size; i++) {
-		id = data[i].abs[MTDEV_TRACKING_ID];
+		id = data[i].tracking_id;
 		foreach_bit(slot, state->used) {
-			if (state->data[slot].abs[MTDEV_TRACKING_ID] != id)
+			if (state->data[slot].tracking_id != id)
 				continue;
-			filter_data(state, caps, &data[i], prop[i], slot);
+			filter_data(state, dev, &data[i], prop[i], slot);
 			push_slot_changes(state, &data[i], prop[i], slot, syn);
 			SETBIT(used, slot);
 			id = MT_ID_NULL;
@@ -304,8 +308,8 @@ static void apply_typeA_changes(struct mtdev_state *state,
 	/* clear unused slots and update slot usage */
 	foreach_bit(slot, state->used & ~used) {
 		struct mtdev_slot tdata = state->data[slot];
-		bitmask_t tprop = BITMASK(MTDEV_TRACKING_ID);
-		tdata.abs[MTDEV_TRACKING_ID] = MT_ID_NULL;
+		bitmask_t tprop = BITMASK(mtdev_abs2mt(ABS_MT_TRACKING_ID));
+		tdata.tracking_id = MT_ID_NULL;
 		push_slot_changes(state, &tdata, tprop, slot, syn);
 	}
 	state->used = used;
@@ -314,11 +318,11 @@ static void apply_typeA_changes(struct mtdev_state *state,
 /*
  * convert_A_to_B - propagate a type A packet as a type B packet
  * @state: mtdev state
- * @caps: device capabilities
+ * @dev: device capabilities
  * @syn: reference to the SYN_REPORT event
  */
 static void convert_A_to_B(struct mtdev_state *state,
-			   const struct mtdev_caps *caps,
+			   const struct mtdev *dev,
 			   const struct input_event *syn)
 {
 	struct mtdev_slot data[DIM_FINGER];
@@ -326,14 +330,19 @@ static void convert_A_to_B(struct mtdev_state *state,
 	int size = process_typeA(state, data, prop);
 	if (size < 0)
 		return;
-	if (!caps->has_abs[MTDEV_TRACKING_ID]) {
+	if (!mtdev_has_mt_event(dev, ABS_MT_TRACKING_ID)) {
 		bitmask_t touch = 0;
 		int i;
 		for (i = 0; i < size; i++)
-			MODBIT(touch, i, istouch(&data[i], caps));
-		assign_tracking_id(state, caps, data, prop, size, touch);
+			MODBIT(touch, i, istouch(&data[i], dev));
+		assign_tracking_id(state, dev, data, prop, size, touch);
 	}
-	apply_typeA_changes(state, caps, data, prop, size, syn);
+	apply_typeA_changes(state, dev, data, prop, size, syn);
+}
+
+struct mtdev *mtdev_new(void)
+{
+	return calloc(1, sizeof(struct mtdev));
 }
 
 int mtdev_init(struct mtdev *dev)
@@ -344,7 +353,7 @@ int mtdev_init(struct mtdev *dev)
 	if (!dev->state)
 		return -ENOMEM;
 	for (i = 0; i < DIM_FINGER; i++)
-		dev->state->data[i].abs[MTDEV_TRACKING_ID] = MT_ID_NULL;
+		dev->state->data[i].tracking_id = MT_ID_NULL;
 	return 0;
 }
 
@@ -364,15 +373,29 @@ int mtdev_open(struct mtdev *dev, int fd)
 	return ret;
 }
 
+struct mtdev *mtdev_new_open(int fd)
+{
+	struct mtdev *dev;
+
+	dev = mtdev_new();
+	if (!dev)
+		return NULL;
+	if (!mtdev_open(dev, fd))
+		return dev;
+
+	mtdev_delete(dev);
+	return NULL;
+}
+
 void mtdev_put_event(struct mtdev *dev, const struct input_event *ev)
 {
 	struct mtdev_state *state = dev->state;
 	if (ev->type == EV_SYN && ev->code == SYN_REPORT) {
 		bitmask_t head = state->outbuf.head;
-		if (dev->caps.has_slot)
+		if (mtdev_has_mt_event(dev, ABS_MT_SLOT))
 			process_typeB(state);
 		else
-			convert_A_to_B(state, &dev->caps, ev);
+			convert_A_to_B(state, dev, ev);
 		if (state->outbuf.head != head)
 			evbuf_put(&state->outbuf, ev);
 	} else {
@@ -380,8 +403,19 @@ void mtdev_put_event(struct mtdev *dev, const struct input_event *ev)
 	}
 }
 
+void mtdev_close_delete(struct mtdev *dev)
+{
+	mtdev_close(dev);
+	mtdev_delete(dev);
+}
+
 void mtdev_close(struct mtdev *dev)
 {
 	free(dev->state);
 	memset(dev, 0, sizeof(struct mtdev));
+}
+
+void mtdev_delete(struct mtdev *dev)
+{
+	free(dev);
 }

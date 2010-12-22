@@ -16,7 +16,7 @@ libmtdev_la_SOURCES = \
 	match.c \
 	match_four.c
 
-AM_CFLAGS = $(CWARNFLAGS)
+AM_CFLAGS = $(CWARNFLAGS) #-DMTDEV_NO_LEGACY_ABI
 
 INCLUDES = -I$(top_srcdir)/include/
 

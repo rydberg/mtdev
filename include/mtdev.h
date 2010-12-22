@@ -62,59 +62,23 @@ extern "C" {
 #ifndef ABS_MT_SLOT
 #define ABS_MT_SLOT		0x2f	/* MT slot being modified */
 #endif
-#ifndef MT_SLOT_ABS_EVENTS
-#define MT_SLOT_ABS_EVENTS {	\
-	ABS_MT_TOUCH_MAJOR,	\
-	ABS_MT_TOUCH_MINOR,	\
-	ABS_MT_WIDTH_MAJOR,	\
-	ABS_MT_WIDTH_MINOR,	\
-	ABS_MT_ORIENTATION,	\
-	ABS_MT_POSITION_X,	\
-	ABS_MT_POSITION_Y,	\
-	ABS_MT_TOOL_TYPE,	\
-	ABS_MT_BLOB_ID,		\
-	ABS_MT_TRACKING_ID,	\
-	ABS_MT_PRESSURE,	\
-}
-#endif
-
-#define MT_ABS_SIZE 11
 
 #define MT_ID_NULL	(-1)
 #define MT_ID_MIN	0
 #define MT_ID_MAX	65535
 
 /**
- * struct mt_caps - protocol capabilities of kernel device
- * @has_mtdata: true if the device has MT capabilities
- * @has_slot: true if the device sends MT slots
- * @slot: slot event properties
- * @abs: ABS_MT event properties
- */
-struct mtdev_caps {
-	int has_mtdata;
-	int has_slot;
-	int has_abs[MT_ABS_SIZE];
-	struct input_absinfo slot;
-	struct input_absinfo abs[MT_ABS_SIZE];
-};
-
-/**
- * struct mtdev - represents an input MT device
- * @caps: the kernel device protocol capabilities
- * @state: internal mtdev parsing state
+ * mtdev_new_open - create and open a new mtdev
+ * @fd: file descriptor of the kernel device
  *
- * The mtdev structure represents a kernel MT device type B, emitting
- * MT slot events. The events put into mtdev may be from any MT
- * device, specifically type A without contact tracking, type A with
- * contact tracking, or type B with contact tracking. See the kernel
- * documentation for further details.
+ * Create a new mtdev and open the conversion.
  *
+ * Returns zero in case of failure.
+ *
+ * This call combines the plumbing functions mtdev_new() and
+ * mtdev_open().
  */
-struct mtdev {
-	struct mtdev_caps caps;
-	struct mtdev_state *state;
-};
+struct mtdev *mtdev_new_open(int fd);
 
 /**
  * mtdev_open - open an mtdev converter
@@ -130,6 +94,27 @@ struct mtdev {
  * mtdev_configure().
  */
 int mtdev_open(struct mtdev *dev, int fd);
+
+/**
+ * mtdev_has_mt_event - check for event type
+ * @dev: the mtdev in use
+ * @code: the ABS_MT code to look for
+ *
+ * Returns true if the given event code is present.
+ */
+int mtdev_has_mt_event(const struct mtdev *dev, int code);
+
+/**
+ * mtdev_get_abs_<property> - get abs event property
+ * @dev: the mtdev in use
+ * @code: the ABS_MT code to look for
+ *
+ * Returns NULL if code is not a valid ABS_MT code.
+ */
+int mtdev_get_abs_minimum(const struct mtdev *dev, int code);
+int mtdev_get_abs_maximum(const struct mtdev *dev, int code);
+int mtdev_get_abs_fuzz(const struct mtdev *dev, int code);
+int mtdev_get_abs_resolution(const struct mtdev *dev, int code);
 
 /**
  * mtdev_idle - check state of kernel device
@@ -172,6 +157,50 @@ int mtdev_get(struct mtdev *dev, int fd, struct input_event* ev, int ev_max);
  * structure.
  */
 void mtdev_close(struct mtdev *dev);
+
+/**
+ * mtdev_close_delete - close conversion and delete mtdev
+ * @dev: the mtdev in use
+ *
+ * Flush pending buffers and deallocate all memory associated with
+ * mtdev. The device pointer is invalidated.  This call combines the
+ * plumbing functions mtdev_close() and mtdev_delete().
+ */
+void mtdev_close_delete(struct mtdev *dev);
+
+#ifndef MTDEV_NO_LEGACY_API
+
+#define MT_ABS_SIZE 11
+#ifndef MT_SLOT_ABS_EVENTS
+#define MT_SLOT_ABS_EVENTS {	\
+	ABS_MT_TOUCH_MAJOR,	\
+	ABS_MT_TOUCH_MINOR,	\
+	ABS_MT_WIDTH_MAJOR,	\
+	ABS_MT_WIDTH_MINOR,	\
+	ABS_MT_ORIENTATION,	\
+	ABS_MT_POSITION_X,	\
+	ABS_MT_POSITION_Y,	\
+	ABS_MT_TOOL_TYPE,	\
+	ABS_MT_BLOB_ID,		\
+	ABS_MT_TRACKING_ID,	\
+	ABS_MT_PRESSURE,	\
+}
+#endif
+
+struct mtdev_caps {
+	int has_mtdata;
+	int has_slot;
+	int has_abs[MT_ABS_SIZE];
+	struct input_absinfo slot;
+	struct input_absinfo abs[MT_ABS_SIZE];
+};
+
+struct mtdev {
+	struct mtdev_caps caps;
+	struct mtdev_state *state;
+};
+
+#endif
 
 #ifdef __cplusplus
 }

@@ -26,10 +26,7 @@
  *
  ****************************************************************************/
 
-#include "common.h"
-
-#define SETABS(c, x, map, key, fd)					\
-	(c->has_##x = getbit(map, key) && getabs(&c->x, key, fd))
+#include "state.h"
 
 static const int SN_COORD = 250;	/* coordinate signal-to-noise ratio */
 static const int SN_WIDTH = 100;	/* width signal-to-noise ratio */
@@ -54,59 +51,157 @@ static int getabs(struct input_absinfo *abs, int key, int fd)
 	return rc >= 0;
 }
 
-static int has_mt_data(const struct mtdev_caps *cap)
+static struct input_absinfo *get_info(struct mtdev *dev, int code)
 {
-	return cap->has_abs[MTDEV_POSITION_X] && cap->has_abs[MTDEV_POSITION_Y];
+	int ix;
+
+	if (code == ABS_MT_SLOT)
+		return &dev->slot;
+	if (!mtdev_is_absmt(code))
+		return NULL;
+
+	ix = mtdev_abs2mt(code);
+	if (ix < 11)
+		return &dev->abs[ix];
+	else
+		return &dev->state->ext_abs[ix - 11];
 }
 
-static void default_fuzz(struct mtdev_caps *cap, int bit, int sn)
+static void set_info(struct mtdev *dev, int code,
+		     const unsigned long *bits, int fd)
 {
-	if (cap->has_abs[bit] && cap->abs[bit].fuzz == 0)
-		cap->abs[bit].fuzz =
-			(cap->abs[bit].maximum - cap->abs[bit].minimum) / sn;
+	int has = getbit(bits, code) && getabs(get_info(dev, code), code, fd);
+	mtdev_set_mt_event(dev, code, has);
 }
 
-static int read_caps(struct mtdev_caps *cap, int fd)
+static void default_fuzz(struct mtdev *dev, int code, int sn)
+{
+	struct input_absinfo *abs = get_info(dev, code);
+	if (!mtdev_has_mt_event(dev, code) || abs->fuzz)
+		return;
+	abs->fuzz = (abs->maximum - abs->minimum) / sn;
+}
+
+int mtdev_configure(struct mtdev *dev, int fd)
 {
 	unsigned long absbits[nlongs(ABS_MAX)];
 	int rc, i;
-
-	memset(cap, 0, sizeof(struct mtdev_caps));
 
 	SYSCALL(rc = ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbits)), absbits));
 	if (rc < 0)
 		return rc;
 
-	SETABS(cap, slot, absbits, ABS_MT_SLOT, fd);
+	set_info(dev, ABS_MT_SLOT, absbits, fd);
 	for (i = 0; i < MT_ABS_SIZE; i++)
-		SETABS(cap, abs[i], absbits, mtdev_mt2abs(i), fd);
+		set_info(dev, mtdev_mt2abs(i), absbits, fd);
 
-	cap->has_mtdata = has_mt_data(cap);
+	dev->has_mtdata = mtdev_has_mt_event(dev, ABS_MT_POSITION_X) &&
+		mtdev_has_mt_event(dev, ABS_MT_POSITION_Y);
 
-	if (!cap->has_abs[MTDEV_POSITION_X])
-		getabs(&cap->abs[MTDEV_POSITION_X], ABS_X, fd);
-	if (!cap->has_abs[MTDEV_POSITION_Y])
-		getabs(&cap->abs[MTDEV_POSITION_Y], ABS_Y, fd);
-	if (!cap->has_abs[MTDEV_PRESSURE])
-		getabs(&cap->abs[MTDEV_PRESSURE], ABS_PRESSURE, fd);
+	if (!mtdev_has_mt_event(dev, ABS_MT_POSITION_X))
+		getabs(get_info(dev, ABS_MT_POSITION_X), ABS_X, fd);
+	if (!mtdev_has_mt_event(dev, ABS_MT_POSITION_Y))
+		getabs(get_info(dev, ABS_MT_POSITION_Y), ABS_Y, fd);
+	if (!mtdev_has_mt_event(dev, ABS_MT_PRESSURE))
+		getabs(get_info(dev, ABS_MT_PRESSURE), ABS_PRESSURE, fd);
 
-	if (!cap->has_abs[MTDEV_TRACKING_ID]) {
-		cap->abs[MTDEV_TRACKING_ID].minimum = MT_ID_MIN;
-		cap->abs[MTDEV_TRACKING_ID].maximum = MT_ID_MAX;
+	if (!mtdev_has_mt_event(dev, ABS_MT_TRACKING_ID)) {
+		mtdev_set_abs_minimum(dev, ABS_MT_TRACKING_ID, MT_ID_MIN);
+		mtdev_set_abs_maximum(dev, ABS_MT_TRACKING_ID, MT_ID_MAX);
 	}
 
-	default_fuzz(cap, MTDEV_POSITION_X, SN_COORD);
-	default_fuzz(cap, MTDEV_POSITION_Y, SN_COORD);
-	default_fuzz(cap, MTDEV_TOUCH_MAJOR, SN_WIDTH);
-	default_fuzz(cap, MTDEV_TOUCH_MINOR, SN_WIDTH);
-	default_fuzz(cap, MTDEV_WIDTH_MAJOR, SN_WIDTH);
-	default_fuzz(cap, MTDEV_WIDTH_MINOR, SN_WIDTH);
-	default_fuzz(cap, MTDEV_ORIENTATION, SN_ORIENT);
+	default_fuzz(dev, ABS_MT_POSITION_X, SN_COORD);
+	default_fuzz(dev, ABS_MT_POSITION_Y, SN_COORD);
+	default_fuzz(dev, ABS_MT_TOUCH_MAJOR, SN_WIDTH);
+	default_fuzz(dev, ABS_MT_TOUCH_MINOR, SN_WIDTH);
+	default_fuzz(dev, ABS_MT_WIDTH_MAJOR, SN_WIDTH);
+	default_fuzz(dev, ABS_MT_WIDTH_MINOR, SN_WIDTH);
+	default_fuzz(dev, ABS_MT_ORIENTATION, SN_ORIENT);
 
 	return 0;
 }
 
-int mtdev_configure(struct mtdev *dev, int fd)
+int mtdev_has_mt_event(const struct mtdev *dev, int code)
 {
-	return read_caps(&dev->caps, fd);
+	int ix;
+
+	if (code == ABS_MT_SLOT)
+		return dev->has_slot;
+	if (!mtdev_is_absmt(code))
+		return 0;
+
+	ix = mtdev_abs2mt(code);
+	if (ix < 11)
+		return dev->has_abs[ix];
+	else
+		return dev->state->has_ext_abs[ix - 11];
 }
+
+int mtdev_get_abs_minimum(const struct mtdev *dev, int code)
+{
+	const struct input_absinfo *abs = get_info((struct mtdev *)dev, code);
+	return abs ? abs->minimum : 0;
+}
+
+int mtdev_get_abs_maximum(const struct mtdev *dev, int code)
+{
+	const struct input_absinfo *abs = get_info((struct mtdev *)dev, code);
+	return abs ? abs->maximum : 0;
+}
+
+int mtdev_get_abs_fuzz(const struct mtdev *dev, int code)
+{
+	const struct input_absinfo *abs = get_info((struct mtdev *)dev, code);
+	return abs ? abs->fuzz : 0;
+}
+
+int mtdev_get_abs_resolution(const struct mtdev *dev, int code)
+{
+	const struct input_absinfo *abs = get_info((struct mtdev *)dev, code);
+	return abs ? abs->resolution : 0;
+}
+
+void mtdev_set_abs_minimum(struct mtdev *dev, int code, int value)
+{
+	struct input_absinfo *abs = get_info(dev, code);
+	if (abs)
+		abs->minimum = value;
+}
+
+void mtdev_set_mt_event(struct mtdev *dev, int code, int value)
+{
+	int ix;
+
+	if (code == ABS_MT_SLOT)
+		dev->has_slot = value;
+	if (!mtdev_is_absmt(code))
+		return;
+
+	ix = mtdev_abs2mt(code);
+	if (ix < 11)
+		dev->has_abs[ix] = value;
+	else
+		dev->state->has_ext_abs[ix - 11] = value;
+}
+
+void mtdev_set_abs_maximum(struct mtdev *dev, int code, int value)
+{
+	struct input_absinfo *abs = get_info(dev, code);
+	if (abs)
+		abs->maximum = value;
+}
+
+void mtdev_set_abs_fuzz(struct mtdev *dev, int code, int value)
+{
+	struct input_absinfo *abs = get_info(dev, code);
+	if (abs)
+		abs->fuzz = value;
+}
+
+void mtdev_set_abs_resolution(struct mtdev *dev, int code, int value)
+{
+	struct input_absinfo *abs = get_info(dev, code);
+	if (abs)
+		abs->resolution = value;
+}
+

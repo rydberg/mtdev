@@ -29,6 +29,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#define MTDEV_NO_LEGACY_API
+
 #include <mtdev-mapping.h>
 #include <mtdev-plumbing.h>
 #include <malloc.h>
@@ -84,5 +86,62 @@ static inline int bitcount(unsigned v)
 
 /* robust system ioctl calls */
 #define SYSCALL(call) while (((call) == -1) && (errno == EINTR))
+
+/**
+ * struct mtdev - represents an input MT device
+ * @has_mtdata: true if the device has MT capabilities
+ * @has_slot: true if the device sends MT slots
+ * @slot: slot event properties
+ * @abs: ABS_MT event properties
+ * @state: internal mtdev parsing state
+ *
+ * The mtdev structure represents a kernel MT device type B, emitting
+ * MT slot events. The events put into mtdev may be from any MT
+ * device, specifically type A without contact tracking, type A with
+ * contact tracking, or type B with contact tracking. See the kernel
+ * documentation for further details.
+ *
+ */
+struct mtdev {
+	int has_mtdata;
+	int has_slot;
+	int has_abs[11];
+	struct input_absinfo slot;
+	struct input_absinfo abs[11];
+	struct mtdev_state *state;
+};
+
+#define MT_ABS_SIZE 11
+
+static const unsigned int mtdev_map_abs2mt[ABS_CNT] = {
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+ 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008,
+ 0x0009, 0x000a, 0x000b, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,
+};
+
+static const unsigned int mtdev_map_mt2abs[MT_ABS_SIZE] = {
+ 0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
+ 0x0038, 0x0039, 0x003a,
+};
+
+static inline int mtdev_is_absmt(unsigned int code)
+{
+	return mtdev_map_abs2mt[code];
+}
+
+static inline unsigned int mtdev_abs2mt(unsigned int code)
+{
+	return mtdev_map_abs2mt[code] - 1;
+}
+
+static inline unsigned int mtdev_mt2abs(unsigned int mtcode)
+{
+	return mtdev_map_mt2abs[mtcode];
+}
 
 #endif

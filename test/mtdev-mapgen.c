@@ -26,12 +26,24 @@
  *
  ****************************************************************************/
 
-#include <mtdev-mapping.h>
+#define MTDEV_NO_LEGACY_API
+#include <mtdev.h>
 #include <stdio.h>
 
-#define BIT_DEF(name)				       \
-	printf("#define MTDEV_"#name"\t%d\n", \
-	       cabs2mt[ABS_MT_##name] - 1)
+#define MT_ABS_SIZE	11
+#define MT_SLOT_ABS_EVENTS {	\
+	ABS_MT_TOUCH_MAJOR,	\
+	ABS_MT_TOUCH_MINOR,	\
+	ABS_MT_WIDTH_MAJOR,	\
+	ABS_MT_WIDTH_MINOR,	\
+	ABS_MT_ORIENTATION,	\
+	ABS_MT_POSITION_X,	\
+	ABS_MT_POSITION_Y,	\
+	ABS_MT_TOOL_TYPE,	\
+	ABS_MT_BLOB_ID,		\
+	ABS_MT_TRACKING_ID,	\
+	ABS_MT_PRESSURE,	\
+}
 
 static unsigned int cabs2mt[ABS_CNT];
 static unsigned int cmt2abs[MT_ABS_SIZE];
@@ -63,17 +75,5 @@ int main(int argc, char *argv[])
 	for (i = 0; i < MT_ABS_SIZE; i++)
 		printf(" 0x%04x,%s", cmt2abs[i], newln(i, MT_ABS_SIZE));
 	printf("};\n\n");
-	BIT_DEF(TOUCH_MAJOR);
-	BIT_DEF(TOUCH_MINOR);
-	BIT_DEF(WIDTH_MAJOR);
-	BIT_DEF(WIDTH_MINOR);
-	BIT_DEF(ORIENTATION);
-	BIT_DEF(POSITION_X);
-	BIT_DEF(POSITION_Y);
-	BIT_DEF(TOOL_TYPE);
-	BIT_DEF(BLOB_ID);
-	BIT_DEF(TRACKING_ID);
-	BIT_DEF(PRESSURE);
-	printf("\n");
 	return 0;
 }

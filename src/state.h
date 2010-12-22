@@ -37,8 +37,28 @@
  * @abs: current values of ABS_MT axes for this slot
  */
 struct mtdev_slot {
-	int abs[MT_ABS_SIZE];
+	int touch_major;
+	int touch_minor;
+	int width_major;
+	int width_minor;
+	int orientation;
+	int position_x;
+	int position_y;
+	int tool_type;
+	int blob_id;
+	int tracking_id;
+	int pressure;
 };
+
+static inline int get_sval(const struct mtdev_slot *slot, int ix)
+{
+	return (&slot->touch_major)[ix];
+}
+
+static inline void set_sval(struct mtdev_slot *slot, int ix, int value)
+{
+	(&slot->touch_major)[ix] = value;
+}
 
 /*
  * struct mtdev_state - MT slot parsing
@@ -50,10 +70,15 @@ struct mtdev_slot {
  * @lastid: last used tracking id
  */
 struct mtdev_state {
+
+	int has_ext_abs[MT_ABS_SIZE - 11];
+	struct input_absinfo ext_abs[MT_ABS_SIZE - 11];
+
 	struct mtdev_iobuf iobuf;
 	struct mtdev_evbuf inbuf;
 	struct mtdev_evbuf outbuf;
 	struct mtdev_slot data[DIM_FINGER];
+
 	bitmask_t used;
 	bitmask_t slot;
 	bitmask_t lastid;

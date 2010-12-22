@@ -36,6 +36,15 @@ extern "C" {
 #include <mtdev.h>
 
 /**
+ * mtdev_new - allocate a new mtdev
+ *
+ * Allocate a new mtdev.
+ *
+ * Returns zero in case of memory allocation failure.
+ */
+struct mtdev *mtdev_new(void);
+
+/**
  * mtdev_init - initialize mtdev converter
  * @dev: the mtdev to initialize
  *
@@ -44,6 +53,26 @@ extern "C" {
  * Returns zero on success, negative error number otherwise.
  */
 int mtdev_init(struct mtdev *dev);
+
+/**
+ * mtdev_set_mt_event - set event type
+ * @dev: the mtdev in use
+ * @code: the ABS_MT code to set
+ * @value: boolean value
+ *
+ * Returns true if the given event code is present.
+ */
+void mtdev_set_mt_event(struct mtdev *dev, int code, int value);
+
+/**
+ * mtdev_set_abs_<property> - set abs event property
+ * @dev: the mtdev in use
+ * @code: the ABS_MT code to set
+ */
+void mtdev_set_abs_minimum(struct mtdev *dev, int code, int value);
+void mtdev_set_abs_maximum(struct mtdev *dev, int code, int value);
+void mtdev_set_abs_fuzz(struct mtdev *dev, int code, int value);
+void mtdev_set_abs_resolution(struct mtdev *dev, int code, int value);
 
 /**
  * mtdev_configure - configure the mtdev converter
@@ -105,6 +134,14 @@ int mtdev_empty(struct mtdev *dev);
  * The queue must be non-empty before calling this function.
  */
 void mtdev_get_event(struct mtdev *dev, struct input_event* ev);
+
+/**
+ * mtdev_delete - free a previously allocated mtdev
+ *
+ * Frees the memory associated with the mtdev and invalidates the
+ * mtdev pointer.
+ */
+void mtdev_delete(struct mtdev *dev);
 
 #ifdef __cplusplus
 }
