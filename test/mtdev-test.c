@@ -54,6 +54,28 @@ static void print_event(const struct input_event *ev)
 		evtime, slot, ev->type, ev->code, ev->value);
 }
 
+#define CHECK(dev, name)			\
+	if (mtdev_has_mt_event(dev, name))	\
+		fprintf(stderr, "   %s\n", #name)
+
+static void show_props(const struct mtdev *dev)
+{
+	fprintf(stderr, "supported mt events:\n");
+	CHECK(dev, ABS_MT_SLOT);
+	CHECK(dev, ABS_MT_TOUCH_MAJOR);
+	CHECK(dev, ABS_MT_TOUCH_MINOR);
+	CHECK(dev, ABS_MT_WIDTH_MAJOR);
+	CHECK(dev, ABS_MT_WIDTH_MINOR);
+	CHECK(dev, ABS_MT_ORIENTATION);
+	CHECK(dev, ABS_MT_POSITION_X);
+	CHECK(dev, ABS_MT_POSITION_Y);
+	CHECK(dev, ABS_MT_TOOL_TYPE);
+	CHECK(dev, ABS_MT_BLOB_ID);
+	CHECK(dev, ABS_MT_TRACKING_ID);
+	CHECK(dev, ABS_MT_PRESSURE);
+	CHECK(dev, ABS_MT_DISTANCE);
+}
+
 static void loop_device(int fd)
 {
 	struct mtdev dev;
@@ -63,6 +85,7 @@ static void loop_device(int fd)
 		fprintf(stderr, "error: could not open device: %d\n", ret);
 		return;
 	}
+	show_props(&dev);
 	/* while the device has not been inactive for five seconds */
 	while (!mtdev_idle(&dev, fd, 5000)) {
 		/* extract all available processed events */
