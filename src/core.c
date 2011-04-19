@@ -365,11 +365,11 @@ int mtdev_open(struct mtdev *dev, int fd)
 		goto error;
 	ret = mtdev_configure(dev, fd);
 	if (ret)
-		goto mtdev;
+		goto error;
 	return 0;
- mtdev:
-	mtdev_close(dev);
+
  error:
+	mtdev_close(dev);
 	return ret;
 }
 
@@ -411,8 +411,10 @@ void mtdev_close_delete(struct mtdev *dev)
 
 void mtdev_close(struct mtdev *dev)
 {
-	free(dev->state);
-	memset(dev, 0, sizeof(struct mtdev));
+	if (dev) {
+		free(dev->state);
+		memset(dev, 0, sizeof(struct mtdev));
+	}
 }
 
 void mtdev_delete(struct mtdev *dev)
