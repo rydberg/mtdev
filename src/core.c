@@ -359,7 +359,10 @@ int mtdev_init(struct mtdev *dev)
 
 int mtdev_open(struct mtdev *dev, int fd)
 {
-	int ret;
+	int ret = -EINVAL;
+
+	if (!dev || fd < 0)
+		goto error;
 	ret = mtdev_init(dev);
 	if (ret)
 		goto error;
