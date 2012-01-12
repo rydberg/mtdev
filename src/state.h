@@ -48,6 +48,7 @@ struct mtdev_slot {
 	int blob_id;
 	int tracking_id;
 	int pressure;
+	int distance;
 };
 
 static inline int get_sval(const struct mtdev_slot *slot, int ix)
