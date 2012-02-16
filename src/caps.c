@@ -82,6 +82,28 @@ static void default_fuzz(struct mtdev *dev, int code, int sn)
 	abs->fuzz = (abs->maximum - abs->minimum) / sn;
 }
 
+int mtdev_set_slots(struct mtdev *dev, int fd)
+{
+	struct { unsigned code; int values[DIM_FINGER]; } req;
+	struct mtdev_state *state = dev->state;
+	int rc, i, s, nslot;
+
+	nslot = mtdev_get_abs_maximum(dev, ABS_MT_SLOT) + 1;
+
+	for (i = 0; i < MT_ABS_SIZE; i++) {
+		req.code = mtdev_mt2abs(i);
+		if (!mtdev_has_mt_event(dev, req.code))
+			continue;
+		SYSCALL(rc = ioctl(fd, EVIOCGMTSLOTS(sizeof(req)), &req));
+		if (rc < 0)
+			return rc;
+		for (s = 0; s < DIM_FINGER && s < nslot; s++)
+			set_sval(&state->data[s], i, req.values[s]);
+	}
+
+	return 0;
+}
+
 int mtdev_configure(struct mtdev *dev, int fd)
 {
 	unsigned long absbits[nlongs(ABS_MAX)];
@@ -117,6 +139,9 @@ int mtdev_configure(struct mtdev *dev, int fd)
 	default_fuzz(dev, ABS_MT_WIDTH_MAJOR, SN_WIDTH);
 	default_fuzz(dev, ABS_MT_WIDTH_MINOR, SN_WIDTH);
 	default_fuzz(dev, ABS_MT_ORIENTATION, SN_ORIENT);
+
+	if (dev->has_slot)
+		mtdev_set_slots(dev, fd);
 
 	return 0;
 }

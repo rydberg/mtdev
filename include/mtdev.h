@@ -68,6 +68,11 @@ extern "C" {
 #define ABS_MT_DISTANCE		0x3b	/* Contact hover distance */
 #endif
 
+/* includes available in 3.4 */
+#ifndef EVIOCGMTSLOTS
+#define EVIOCGMTSLOTS(len)	_IOC(_IOC_READ, 'E', 0x0a, len)
+#endif
+
 #define MT_ID_NULL	(-1)
 #define MT_ID_MIN	0
 #define MT_ID_MAX	65535
