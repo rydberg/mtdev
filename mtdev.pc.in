@@ -7,3 +7,4 @@ Name: mtdev
 Description: Multitouch Protocol Translation Library
 Version: @PACKAGE_VERSION@
 Libs: -L${libdir} -lmtdev
+Cflags: -I${includedir}
