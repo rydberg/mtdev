@@ -1,5 +1,6 @@
 #include "match.h"
 #include <limits.h>
+#include <stdlib.h>
 
 typedef unsigned char u8;
 typedef unsigned int u32;
