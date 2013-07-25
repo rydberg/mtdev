@@ -61,10 +61,10 @@ static struct input_absinfo *get_info(struct mtdev *dev, int code)
 		return NULL;
 
 	ix = mtdev_abs2mt(code);
-	if (ix < 11)
+	if (ix < LEGACY_API_NUM_MT_AXES)
 		return &dev->abs[ix];
 	else
-		return &dev->state->ext_abs[ix - 11];
+		return &dev->state->ext_abs[ix - LEGACY_API_NUM_MT_AXES];
 }
 
 static void set_info(struct mtdev *dev, int code,
@@ -156,10 +156,10 @@ int mtdev_has_mt_event(const struct mtdev *dev, int code)
 		return 0;
 
 	ix = mtdev_abs2mt(code);
-	if (ix < 11)
+	if (ix < LEGACY_API_NUM_MT_AXES)
 		return dev->has_abs[ix];
 	else
-		return dev->state->has_ext_abs[ix - 11];
+		return dev->state->has_ext_abs[ix - LEGACY_API_NUM_MT_AXES];
 }
 
 int mtdev_get_abs_minimum(const struct mtdev *dev, int code)
@@ -203,10 +203,10 @@ void mtdev_set_mt_event(struct mtdev *dev, int code, int value)
 		return;
 
 	ix = mtdev_abs2mt(code);
-	if (ix < 11)
+	if (ix < LEGACY_API_NUM_MT_AXES)
 		dev->has_abs[ix] = value;
 	else
-		dev->state->has_ext_abs[ix - 11] = value;
+		dev->state->has_ext_abs[ix - LEGACY_API_NUM_MT_AXES] = value;
 }
 
 void mtdev_set_abs_maximum(struct mtdev *dev, int code, int value)

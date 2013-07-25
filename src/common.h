@@ -87,6 +87,14 @@ static inline int bitcount(unsigned v)
 /* robust system ioctl calls */
 #define SYSCALL(call) while (((call) == -1) && (errno == EINTR))
 
+/* To be compatible to the original, non-opaque mtdev API, we can only use 11
+ * axes in the basic struct. Everything else is hidden in the state, see the
+ * use of dev->abs[idx] vs dev->state->ext_abs[idx]
+ *
+ * See MT_ABS_SIZE in include/mtdev.h
+ */
+#define LEGACY_API_NUM_MT_AXES 11
+
 /**
  * struct mtdev - represents an input MT device
  * @has_mtdata: true if the device has MT capabilities
@@ -105,9 +113,9 @@ static inline int bitcount(unsigned v)
 struct mtdev {
 	int has_mtdata;
 	int has_slot;
-	int has_abs[11];
+	int has_abs[LEGACY_API_NUM_MT_AXES];
 	struct input_absinfo slot;
-	struct input_absinfo abs[11];
+	struct input_absinfo abs[LEGACY_API_NUM_MT_AXES];
 	struct mtdev_state *state;
 };
 
