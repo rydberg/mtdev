@@ -3,7 +3,7 @@ SUBDIRS = src test
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = mtdev.pc
 
-INCLUDES = $(top_srcdir)/include/
+AM_CPPFLAGS = $(top_srcdir)/include/
 
 .PHONY: ChangeLog INSTALL
 INSTALL:

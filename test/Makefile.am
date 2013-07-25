@@ -1,7 +1,7 @@
 noinst_PROGRAMS = mtdev-mapgen mtdev-matching mtdev-kernel
 bin_PROGRAMS = mtdev-test
 
-INCLUDES=-I$(top_srcdir)/include/
+AM_CPPFLAGS=-I$(top_srcdir)/include/
 
 mtdev_mapgen_SOURCES = mtdev-mapgen.c
 
