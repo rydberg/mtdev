@@ -72,8 +72,8 @@ static inline void set_sval(struct mtdev_slot *slot, int ix, int value)
  */
 struct mtdev_state {
 
-	int has_ext_abs[MT_ABS_SIZE - 11];
-	struct input_absinfo ext_abs[MT_ABS_SIZE - 11];
+	int has_ext_abs[MT_ABS_SIZE - LEGACY_API_NUM_MT_AXES];
+	struct input_absinfo ext_abs[MT_ABS_SIZE - LEGACY_API_NUM_MT_AXES];
 
 	struct mtdev_iobuf iobuf;
 	struct mtdev_evbuf inbuf;
