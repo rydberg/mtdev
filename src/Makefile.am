@@ -18,7 +18,7 @@ libmtdev_la_SOURCES = \
 
 AM_CFLAGS = $(CWARNFLAGS) #-DMTDEV_NO_LEGACY_ABI
 
-AM_CPPFLAGS = -I$(top_srcdir)/include/
+AM_CPPFLAGS = -I$(top_srcdir)/include/ -I$(srcdir)
 
 libmtdevincludedir = $(includedir)
 libmtdevinclude_HEADERS = \
